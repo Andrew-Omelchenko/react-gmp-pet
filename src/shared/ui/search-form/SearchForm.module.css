@@ -1,0 +1,39 @@
+.form {
+  display: block;
+  gap: 16px;
+  align-items: center;
+}
+
+.input {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  width: 733px;
+  height: 57px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.button {
+  width: 233px;
+  height: 57px;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #f65261;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.button:focus-visible,
+.input:focus-visible {
+  outline: 2px solid #333;
+  outline-offset: 2px;
+}

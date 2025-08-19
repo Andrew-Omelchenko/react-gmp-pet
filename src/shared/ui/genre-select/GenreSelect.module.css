@@ -1,0 +1,56 @@
+.wrapper {
+  position: relative;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 0;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.tabs::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #424242;
+}
+
+.tab {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  line-height: 100%;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  /*color: #fff;*/
+}
+
+.tab:focus {
+  outline: none;
+}
+
+.tab:focus-visible {
+  outline: 1px dotted rgba(127, 127, 127, 0.7);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #f65261;
+  bottom: -8px;
+  border-radius: 0;
+}

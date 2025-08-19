@@ -1,30 +1,32 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
+import { Counter } from './shared/ui/counter';
+import { SearchForm } from './shared/ui/search-form';
+import { GenreSelect } from './shared/ui/genre-select';
+
+const GENRES = ['All', 'Documentary', 'Comedy', 'Horror', 'Crime'];
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [selected, setSelected] = useState('All');
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-    </>
+    <div className="vstack">
+      <Counter initialValue={0} />
+      <SearchForm
+        initialQuery="Matrix"
+        onSearch={(query) => {
+          console.log(`Search Query: ${query}`);
+        }}
+      />
+      <GenreSelect
+        genres={GENRES}
+        selected={selected}
+        onSelect={(genre) => {
+          console.log(`Selected Genre: ${genre}`);
+          setSelected(genre);
+        }}
+      />
+    </div>
   );
 }
 
