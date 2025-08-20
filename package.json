@@ -11,19 +11,34 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "e2e:open": "start-server-and-test \"npm run dev\" http://localhost:5173 \"npx cypress open --e2e\"",
+    "e2e": "start-server-and-test \"npm run dev\" http://localhost:5173 \"npx cypress run --e2e\""
   },
   "dependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
     "@eslint/js": "^9.33.0",
+    "@testing-library/cypress": "^10.0.3",
+    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "@vitejs/plugin-react": "^5.0.0",
+    "babel-jest": "^30.0.5",
+    "cypress": "^14.5.4",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -33,8 +48,12 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "husky": "^9.1.7",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
     "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
+    "start-server-and-test": "^2.0.13",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
@@ -48,5 +67,35 @@
     "**/*.{json,md,css,scss,html,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "jest": {
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/test/setupTests.ts"
+    ],
+    "transform": {
+      "^.+\\.(t|j)sx?$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
+      "^.+\\.(css|sass|scss)$": "<rootDir>/src/test/__mocks__/styleMock.cjs",
+      "^.+\\.(jpg|jpeg|png|gif|webp|avif|svg)$": "<rootDir>/src/test/__mocks__/fileMock.cjs"
+    },
+    "testMatch": [
+      "**/*.spec.ts?(x)",
+      "**/*.test.ts?(x)"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
+    "clearMocks": true
   }
 }
