@@ -27,3 +27,6 @@ dist-ssr
 .eslintcache
 
 package-lock.json
+
+*storybook.log
+storybook-static

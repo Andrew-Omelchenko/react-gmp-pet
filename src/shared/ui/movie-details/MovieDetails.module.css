@@ -1,0 +1,50 @@
+.details {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+}
+
+.imageWrap {
+}
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.content {
+  display: grid;
+  gap: 12px;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #888;
+}
+
+.year {
+}
+.rating {
+}
+.duration {
+}
+
+.description {
+  margin: 0;
+  line-height: 1.5;
+}

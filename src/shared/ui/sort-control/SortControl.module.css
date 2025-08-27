@@ -1,0 +1,16 @@
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.select {
+  min-width: 200px;
+  height: 36px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
