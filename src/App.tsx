@@ -6,12 +6,16 @@ import { GenreSelect } from './shared/ui/genre-select';
 import { MovieTile } from './shared/ui/movie-tile';
 import { MovieDetails } from './shared/ui/movie-details';
 import { SortControl, type SortValue } from './shared/ui/sort-control';
+import { Dialog } from './shared/ui/dialog';
+import { MovieForm, type MovieSubmit } from './shared/ui/movie-form';
 
 const GENRES = ['All', 'Documentary', 'Comedy', 'Horror', 'Crime'];
 
 function App() {
   const [selected, setSelected] = useState('All');
   const [sort, setSort] = useState<SortValue>('releaseDate');
+  const [open, setOpen] = useState(false);
+  const [saved, setSaved] = useState<MovieSubmit | null>(null);
 
   return (
     <div className="vstack">
@@ -58,6 +62,19 @@ function App() {
           setSort(v);
         }}
       />
+      <button onClick={() => setOpen(true)}>Open dialog</button>
+      {open && (
+        <Dialog title="Edit Movie" onClose={() => setOpen(false)}>
+          <p>Form fields go here</p>
+        </Dialog>
+      )}
+      <MovieForm
+        onSubmit={(data) => {
+          console.log('submit:', data);
+          setSaved(data);
+        }}
+      />
+      {saved && <pre>{JSON.stringify(saved, null, 2)}</pre>}
     </div>
   );
 }
