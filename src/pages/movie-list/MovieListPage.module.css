@@ -1,0 +1,34 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+}
+
+.header {
+  /* search bar or details block */
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.empty {
+  color: #aaa;
+}
+
+.info {
+  color: #bbb;
+}
+.error {
+  color: #f88;
+}
