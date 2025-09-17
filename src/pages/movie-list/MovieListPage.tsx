@@ -1,11 +1,10 @@
-import React from 'react';
+import * as React from 'react';
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import styles from './MovieListPage.module.css';
 
-import { SearchForm } from '../../shared/ui/search-form';
 import { GenreSelect } from '../../shared/ui/genre-select';
 import { SortControl, type SortValue } from '../../shared/ui/sort-control';
 import { MovieTile, type MovieInfo } from '../../shared/ui/movie-tile';
-import { MovieDetails } from '../../shared/ui/movie-details';
 import { fetchMovies } from '../../core/api/movies.ts';
 
 export type UiMovie = MovieInfo & {
@@ -16,19 +15,41 @@ export type UiMovie = MovieInfo & {
 
 const STATIC_GENRES = ['All', 'Documentary', 'Comedy', 'Horror', 'Crime'] as const;
 
+function coerceSort(v: string | null): SortValue {
+  return v === 'title' || v === 'releaseDate' ? v : 'releaseDate';
+}
+function coerceGenre(v: string | null): string {
+  return v && v.length ? v : 'All';
+}
+
 export default function MovieListPage() {
-  const [query, setQuery] = React.useState('');
-  const [sort, setSort] = React.useState<SortValue>('releaseDate');
-  const [activeGenre, setActiveGenre] = React.useState<string>('All');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const query = searchParams.get('query') ?? '';
+  const activeGenre = coerceGenre(searchParams.get('genre'));
+  const sort = coerceSort(searchParams.get('sort'));
 
   const [movies, setMovies] = React.useState<UiMovie[]>([]);
-  const [selected, setSelected] = React.useState<UiMovie | null>(null);
-
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  const patchParams = React.useCallback(
+    (patch: Record<string, string | null | undefined>) => {
+      const next = new URLSearchParams(searchParams);
+      for (const [k, v] of Object.entries(patch)) {
+        if (v == null || v === '') next.delete(k);
+        else next.set(k, v);
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+
   React.useEffect(() => {
     const controller = new AbortController();
+    let alive = true;
+
     setLoading(true);
     setError(null);
 
@@ -41,50 +62,38 @@ export default function MovieListPage() {
       signal: controller.signal,
     })
       .then((resp) => {
+        if (!alive) return;
         setMovies(resp.data as UiMovie[]);
-        if (selected && !resp.data.some((m) => m.id === selected.id)) {
-          setSelected(null);
-        }
       })
       .catch((err) => {
-        if (controller.signal.aborted) {
-          return;
-        }
+        if (!alive || controller.signal.aborted) return;
         setError(err?.message ?? 'Failed to load movies');
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!alive) return;
+        setLoading(false);
       });
 
-    return () => controller.abort();
-  }, [query, sort, activeGenre]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      alive = false;
+      controller.abort();
+    };
+  }, [query, sort, activeGenre]);
 
   return (
     <div className={styles.page} data-testid="movie-list-page">
       <div className={styles.header}>
-        {selected ? (
-          <MovieDetails
-            details={{
-              imageUrl: selected.imageUrl,
-              title: selected.title,
-              year: selected.year,
-              rating: selected.rating,
-              duration: selected.duration,
-              description: selected.description,
-            }}
-          />
-        ) : (
-          <SearchForm initialQuery={query} onSearch={(q) => setQuery(q)} />
-        )}
+        {/* Child routes render here: Search header (index) or MovieDetails header (/:movieId) */}
+        <Outlet />
       </div>
 
       <div className={styles.controls}>
         <GenreSelect
           genres={STATIC_GENRES as unknown as string[]}
           selected={activeGenre}
-          onSelect={(g) => setActiveGenre(g)}
+          onSelect={(g) => patchParams({ genre: g })}
         />
-        <SortControl value={sort} onChange={setSort} />
+        <SortControl value={sort} onChange={(v) => patchParams({ sort: v })} />
       </div>
 
       {loading && <p className={styles.info}>Loading…</p>}
@@ -104,7 +113,12 @@ export default function MovieListPage() {
                 year: m.year,
                 genres: m.genres,
               }}
-              onClick={() => setSelected(m)}
+              onClick={() =>
+                navigate({
+                  pathname: `/${m.id}`,
+                  search: searchParams.toString(), // ✅ preserve current filters in URL
+                })
+              }
             />
           ))
         )}
