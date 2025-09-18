@@ -24,4 +24,14 @@ export const moviesHandlers = [
 
     return HttpResponse.json({ data, total: data.length, offset: 0, limit: 30 });
   }),
+  http.get(/\/movies\/(\d+)(\?.*)?$/, ({ request }) => {
+    const id = new URL(request.url).pathname.split('/').pop()!;
+    const movie = movies.find((x) => String(x.id) === id);
+
+    if (!movie) {
+      return HttpResponse.json({ message: 'Movie not found' }, { status: 404 });
+    }
+
+    return HttpResponse.json(movie);
+  }),
 ];
