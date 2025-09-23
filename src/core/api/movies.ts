@@ -49,3 +49,18 @@ export async function fetchMovies({
     data: res.data.data.map(mapApiMovieToUi),
   };
 }
+
+export type ApiMovie = {
+  id: number | string;
+  title: string;
+  release_date?: string;
+  poster_path: string;
+  overview?: string;
+  vote_average?: number;
+  runtime?: number;
+};
+
+export async function fetchMovieById(id: string | number, signal?: AbortSignal): Promise<ApiMovie> {
+  const resp = await api.get(`/movies/${id}`, { signal });
+  return resp.data as ApiMovie;
+}
