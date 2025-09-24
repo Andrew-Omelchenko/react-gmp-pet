@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
+import * as React from 'react';
+import { Link, Outlet, useSearchParams } from 'react-router-dom';
 import { SearchForm } from '../../shared/ui/search-form';
 
 export default function SearchRouteHeader() {
@@ -14,5 +15,20 @@ export default function SearchRouteHeader() {
     setSearchParams(next, { replace: true });
   };
 
-  return <SearchForm initialQuery={query} onSearch={(q) => patch({ query: q })} />;
+  const addHref = React.useMemo(() => {
+    const sp = new URLSearchParams(searchParams);
+    return `/new?${sp.toString()}`;
+  }, [searchParams]);
+
+  return (
+    <div>
+      <div>
+        <SearchForm initialQuery={query} onSearch={(q) => patch({ query: q })} />
+        <Link to={addHref} aria-label="Add new movie">
+          + Add movie
+        </Link>
+      </div>
+      <Outlet />
+    </div>
+  );
 }
