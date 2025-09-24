@@ -1,4 +1,7 @@
 import React from 'react';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import styles from './MovieForm.module.css';
 
 export type MovieInitial = {
@@ -24,60 +27,108 @@ export type MovieSubmit = {
 };
 
 export type MovieFormProps = {
-  onSubmit: (data: MovieSubmit) => void;
-  // Optional initial values (omitted for "Add movie")
+  onSubmit: (data: MovieSubmit) => void | Promise<void>;
   initial?: MovieInitial;
 };
+
+const Schema = z.object({
+  id: z.union([z.string(), z.number()]).optional(),
+  title: z.string().min(1, 'Title is required'),
+  imageUrl: z.url('Poster URL must be a valid URL'),
+
+  year: z
+    .string()
+    .optional()
+    .refine((s) => !s || (/^\d{4}$/.test(s) && Number(s) >= 1888), {
+      message: 'Year must be a 4-digit number ≥ 1888',
+    }),
+
+  rating: z
+    .string()
+    .optional()
+    .refine(
+      (s) => {
+        if (!s) return true;
+        const n = Number(s);
+        return !Number.isNaN(n) && n >= 0 && n <= 10;
+      },
+      { message: 'Rating must be a number between 0 and 10' },
+    ),
+
+  duration: z.string(),
+  genres: z.string(),
+  description: z.string(),
+});
+
+type FormInput = z.input<typeof Schema>;
+type FormOutput = z.output<typeof Schema>;
 
 export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
   const formId = React.useId();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const defaults: FormInput = {
+    id: initial?.id,
+    title: initial?.title ?? '',
+    imageUrl: initial?.imageUrl ?? '',
+    year: initial?.year != null ? String(initial.year) : '',
+    rating: initial?.rating != null ? String(initial.rating) : '',
+    duration: initial?.duration ?? '',
+    genres: (initial?.genres ?? []).join(', '),
+    description: initial?.description ?? '',
+  };
 
-    const fd = new FormData(e.currentTarget);
-    const raw = Object.fromEntries(fd.entries()) as Record<string, FormDataEntryValue>;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormInput>({
+    resolver: zodResolver(Schema),
+    defaultValues: defaults,
+  });
 
-    const toNumber = (v: FormDataEntryValue | undefined) => {
-      const s = (v ?? '').toString().trim();
-      if (s === '') return undefined;
-      const n = Number(s);
-      return Number.isNaN(n) ? undefined : n;
+  const onValid: SubmitHandler<FormInput> = async (raw) => {
+    const data: FormOutput = raw;
+
+    const yearNum = data.year && data.year.trim() !== '' ? Number(data.year) : undefined;
+
+    const ratingNum = data.rating && data.rating.trim() !== '' ? Number(data.rating) : undefined;
+
+    const parsedGenres = data.genres
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+
+    const out: MovieSubmit = {
+      id: data.id ?? initial?.id,
+      title: data.title,
+      imageUrl: data.imageUrl,
+      year: yearNum,
+      rating: ratingNum,
+      duration: data.duration,
+      genres: parsedGenres,
+      description: data.description,
     };
 
-    const csvToArray = (v: FormDataEntryValue | undefined) =>
-      (v ?? '')
-        .toString()
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-    const data: MovieSubmit = {
-      id: raw.id ? raw.id.toString() : initial?.id, // keep id if provided
-      title: (raw.title ?? '').toString(),
-      imageUrl: (raw.imageUrl ?? '').toString(),
-      year: toNumber(raw.year),
-      rating: toNumber(raw.rating),
-      duration: (raw.duration ?? '').toString(),
-      genres: csvToArray(raw.genres),
-      description: (raw.description ?? '').toString(),
-    };
-
-    onSubmit(data);
+    await onSubmit(out);
+    reset(defaults);
   };
 
   return (
     <form
       aria-labelledby={`${formId}-title`}
       className={styles.form}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onValid)}
       data-testid="movie-form"
+      noValidate
     >
       <h3 id={`${formId}-title`} className={styles.formTitle}>
         {initial?.id ? 'Edit movie' : 'Add movie'}
       </h3>
 
-      {initial?.id != null && <input type="hidden" name="id" defaultValue={String(initial.id)} />}
+      {initial?.id != null && (
+        <input type="hidden" {...register('id')} defaultValue={String(initial.id)} />
+      )}
 
       <div className={styles.row}>
         <label htmlFor={`${formId}-title-input`} className={styles.label}>
@@ -85,13 +136,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
         </label>
         <input
           id={`${formId}-title-input`}
-          name="title"
           type="text"
           className={styles.input}
           placeholder="Movie title"
-          defaultValue={initial?.title ?? ''}
-          required
+          {...register('title')}
         />
+        {errors.title && <span className={styles.error}>{errors.title.message}</span>}
       </div>
 
       <div className={styles.row}>
@@ -100,13 +150,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
         </label>
         <input
           id={`${formId}-image-url`}
-          name="imageUrl"
           type="url"
           className={styles.input}
           placeholder="https://example.com/poster.jpg"
-          defaultValue={initial?.imageUrl ?? ''}
-          required
+          {...register('imageUrl')}
         />
+        {errors.imageUrl && <span className={styles.error}>{errors.imageUrl.message}</span>}
       </div>
 
       <div className={styles.rowCols}>
@@ -116,13 +165,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
           </label>
           <input
             id={`${formId}-year`}
-            name="year"
-            type="number"
+            type="text"
             className={styles.input}
             placeholder="2014"
-            defaultValue={initial?.year ?? ''}
-            min={1888}
+            {...register('year')}
           />
+          {errors.year && <span className={styles.error}>{errors.year.message as string}</span>}
         </div>
 
         <div className={styles.col}>
@@ -131,15 +179,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
           </label>
           <input
             id={`${formId}-rating`}
-            name="rating"
-            type="number"
-            step="0.1"
+            type="text"
             className={styles.input}
             placeholder="8.6"
-            defaultValue={initial?.rating ?? ''}
-            min={0}
-            max={10}
+            {...register('rating')}
           />
+          {errors.rating && <span className={styles.error}>{errors.rating.message as string}</span>}
         </div>
 
         <div className={styles.col}>
@@ -148,12 +193,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
           </label>
           <input
             id={`${formId}-duration`}
-            name="duration"
             type="text"
             className={styles.input}
             placeholder="2h 49m"
-            defaultValue={initial?.duration ?? ''}
+            {...register('duration')}
           />
+          {errors.duration && <span className={styles.error}>{errors.duration.message}</span>}
         </div>
       </div>
 
@@ -163,12 +208,12 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
         </label>
         <input
           id={`${formId}-genres`}
-          name="genres"
           type="text"
           className={styles.input}
           placeholder="Sci-Fi, Adventure"
-          defaultValue={initial?.genres?.join(', ') ?? ''}
+          {...register('genres')}
         />
+        {errors.genres && <span className={styles.error}>{errors.genres.message}</span>}
       </div>
 
       <div className={styles.row}>
@@ -177,17 +222,17 @@ export default function MovieForm({ initial, onSubmit }: MovieFormProps) {
         </label>
         <textarea
           id={`${formId}-description`}
-          name="description"
           rows={4}
           className={styles.textarea}
           placeholder="Short synopsis…"
-          defaultValue={initial?.description ?? ''}
+          {...register('description')}
         />
+        {errors.description && <span className={styles.error}>{errors.description.message}</span>}
       </div>
 
       <div className={styles.actions}>
-        <button type="submit" className={styles.submitButton}>
-          Save
+        <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : 'Save'}
         </button>
       </div>
     </form>
