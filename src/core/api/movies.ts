@@ -58,6 +58,7 @@ export type ApiMovie = {
   overview?: string;
   vote_average?: number;
   runtime?: number;
+  genres: string[];
 };
 
 export async function fetchMovieById(id: string | number, signal?: AbortSignal): Promise<ApiMovie> {
@@ -83,4 +84,25 @@ export async function createMovie(payload: MovieBasePayload, signal?: AbortSigna
   const resp = await api.post('/movies', payload, { signal });
   // backend returns Movie with id
   return resp.data as { id: number | string } & MovieBasePayload;
+}
+
+export type UpdateMoviePayload = {
+  id?: string | number;
+  title: string;
+  poster_path: string;
+  overview: string;
+  runtime: number;
+  genres: string[];
+  release_date?: string;
+  tagline?: string;
+  vote_average?: number;
+  vote_count?: number;
+  budget?: number;
+  revenue?: number;
+};
+
+export async function updateMovie(payload: UpdateMoviePayload, signal?: AbortSignal) {
+  const { data } = await api.put('/movies', payload, { signal });
+  // server echoes updated movie
+  return data as UpdateMoviePayload;
 }

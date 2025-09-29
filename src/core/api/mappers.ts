@@ -22,8 +22,9 @@ export function mapUiToApiMovie(ui: Partial<UiMovie>): ApiMovie {
     poster_path: ui.imageUrl ?? '',
     overview: ui.description ?? '',
     runtime: parseDurationToMinutes(ui.duration ?? ''),
-    release_date: yearToReleaseDate(ui.year),
+    release_date: releaseDateFromYear(ui.year),
     genres: ui.genres ?? [],
+    vote_average: ui.rating,
   };
 }
 
@@ -51,12 +52,20 @@ const minutesToDuration = (mins?: number) => {
   return h ? `${h}h ${m}m` : `${m}m`;
 };
 
-export function yearToReleaseDate(year?: number): string | undefined {
-  return typeof year === 'number' && Number.isFinite(year) ? `${year}-01-01` : undefined;
-}
+export const minutesFromDuration = (s?: string): number | undefined => {
+  if (!s) return undefined;
+  const h = /(\d+)\s*h/i.exec(s)?.[1];
+  const m = /(\d+)\s*m/i.exec(s)?.[1];
+  if (h || m) return (h ? parseInt(h) * 60 : 0) + (m ? parseInt(m) : 0);
+  const mm = parseInt(s, 10);
+  return Number.isFinite(mm) ? mm : undefined;
+};
 
 export function releaseDateToYear(date?: string): number {
   const y = date?.slice(0, 4);
   const n = y ? parseInt(y, 10) : NaN;
   return Number.isFinite(n) ? n : 2000;
 }
+
+export const releaseDateFromYear = (y?: number) =>
+  typeof y === 'number' && Number.isFinite(y) ? `${y}-01-01` : undefined;

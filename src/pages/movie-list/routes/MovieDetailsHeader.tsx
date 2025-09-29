@@ -1,4 +1,4 @@
-import { useLoaderData } from 'react-router-dom';
+import { Outlet, useLoaderData } from 'react-router-dom';
 import { MovieDetails } from '../../../shared/ui/movie-details';
 
 export type MovieDetailsDTO = {
@@ -12,5 +12,10 @@ export type MovieDetailsDTO = {
 
 export default function MovieDetailsRouteHeader() {
   const details = useLoaderData() as MovieDetailsDTO;
-  return <MovieDetails details={details} />;
+  return (
+    <>
+      <MovieDetails details={details} />
+      <Outlet />
+    </>
+  );
 }

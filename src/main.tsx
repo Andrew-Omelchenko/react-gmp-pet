@@ -10,6 +10,8 @@ import './index.css';
 import MovieDetailsRouteHeader from './pages/movie-list/routes/MovieDetailsHeader.tsx';
 import { movieDetailsLoader } from './pages/movie-list/loaders/movieDetailsLoader.ts';
 import AddMovieRoute from './pages/movie-list/routes/AddMovieRoute.tsx';
+import EditMovieRoute from './pages/movie-list/routes/EditMovieRoute.tsx';
+import { editMovieLoader } from './pages/movie-list/loaders/editMovieLoader.ts';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +30,7 @@ const router = createBrowserRouter([
             ],
           },
           { path: ':movieId', element: <MovieDetailsRouteHeader />, loader: movieDetailsLoader },
+          { path: ':movieId/edit', element: <EditMovieRoute />, loader: editMovieLoader },
         ],
       },
     ],
