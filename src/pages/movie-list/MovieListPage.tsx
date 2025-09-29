@@ -116,7 +116,13 @@ export default function MovieListPage() {
               onClick={() =>
                 navigate({
                   pathname: `/${m.id}`,
-                  search: searchParams.toString(), // ✅ preserve current filters in URL
+                  search: searchParams.toString(),
+                })
+              }
+              onEdit={(movie) =>
+                navigate({
+                  pathname: `/${movie.id}/edit`,
+                  search: searchParams.toString(),
                 })
               }
             />
